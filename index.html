@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="ie-edge">
+	<title>Calendario Web</title>
+
+	<!-- BOOTSTRAP CSS CDN -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/moment.min.js"></script>	
+
+	<!-- BOOTSTRAP SCRIPT CDN -->	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+	<!--FullCalendar-->
+	<link rel="stylesheet" type="text/css" href="css/fullcalendar.min.css">
+	<script type="text/javascript" src="js/fullcalendar.min.js"></script>	
+	<script type="text/javascript" src="js/es.js"></script>	
+	
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col"></div>
+			<div class="col-7"> <div id="CalendarioWeb"></div> </div>
+			<div class="col"></div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$.getJSON('http://localhost/articfis/eventos/geteventos.json', function(data){
+				sessionStorage.setItem('datosJSON', data);
+			});
+
+			var datos = sessionStorage.getItem('datosJSON');
+			console.log(datos);
+
+			$("#CalendarioWeb").fullCalendar({
+				//Leer Documentacion en https://fullcalendar.io/docs/
+				header:{
+					left: 'today,prev,next,Miboton',
+					center:'title',
+					right: 'month,basicWeek,basicDay,agendaWeek,agendaDay'
+				},
+				/*customButtons:{
+					Miboton:{
+						text:"Boton 1",
+						click:function(){
+							alert("Acción del Boton");
+						}
+					}
+				},*/
+				dayClick: function(date, jsEvent, view) {
+				    /*alert('Valor Seleccionado: ' + date.format());
+				    alert("Vista Actual: " + view.name);
+				    $(this).css('background-color','red');*/
+				    $('#tituloAgregarEvento').text("Agregar Nuevo Evento - "+date.format());
+				    $('#txtAgregarFecha').val(date.format());
+				    $('#txtAgregarTitulo').val('');
+				    $('#txtAgregarHora').val(moment().format('LT'));
+				    $('#txtAgregarDescripcion').val('');
+				    $('#txtAgregarColor').val('#ff0000');
+				    $("#ModalAgregar").modal();
+
+				}, 
+				events: 'http://localhost/calendario_eventos/eventos.php'
+				
+				/*
+				eventSources:[{
+					events:[
+						{
+							id:1,
+							title: 'Evento1, llegamos a 8 mill',
+							descripcion:'Develoteca ¡Me apasiona!',
+							start:'2018-04-01'
+						},
+						{
+							id:2,
+							title: 'Evento 2, llegamos 9 mil',
+							descripcion:'Muchoas felicidades...',
+							start:'2018-04-07',
+							end:'2018-04-09'
+						},
+						{
+							id:3,
+							title: 'Evento 3, llegamos 10 mil',
+							descripcion:'describiendo el evento 3',
+							start:'2018-04-25T12:30:00',
+							allDay: false,
+							color:"#FF00FF",
+							textColor:"#000000"
+						}
+					],
+					color:"black",
+					textColor:"yellow"
+				}]*/,
+				eventClick:function(calEvent, jsEvent, view){
+					$('#tituloEvento').html(calEvent.title);
+
+					$('#txtDescripcion').val(calEvent.descripcion);
+					$('#txtID').val(calEvent.id);
+					$('#txtTitulo').val(calEvent.title);
+					$('#txtColor').val(calEvent.color);
+
+					FechaHora = calEvent.start._i.split(" ");
+					$('#txtFecha').val(FechaHora[0]);
+					$('#txtHora').val(FechaHora[1]);
+
+					$("#ModalEventos").modal();
+				}
+				
+			});
+		});
+	</script>
+
+	<!-- Modal (Agregar) -->
+	<div class="modal fade" id="ModalAgregar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="tituloAgregarEvento">Agregar Nuevo Evento</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+        	<input type="hidden" id="txtAgregarID" name="txtID">
+        	<input type="hidden" id="txtAgregarFecha" name="txtFecha">
+
+        	<div class="form-row">
+        		<div class="form-group col-md-8">        			
+        			<label>Título</label>
+        			<input type="text" id="txtAgregarTitulo" class="form-control" placeholder="Título del evento">
+        		</div>
+        		<div class="form-group col-md-4">        			
+        			<label>Hora del Evento</label>
+        			<input type="time" id="txtAgregarHora" class="form-control" value="10:30">
+        		</div>
+        	</div>
+        	
+        	<div class="form-group">
+        		<label>Descripción</label>
+        		<textarea id="txtAgregarDescripcion" class="form-control" rows="3"></textarea>
+        	</div>
+        	<div class="form-group">
+        		<label>Color:</label>
+        		<input type="color" value="#ff0000" id="txtAgregarColor" class="form-control" style="height:36px;">
+        	</div>
+      </div>
+	      <div class="modal-footer">
+	        
+	      	<button type="button" id="btnGuardar" class="btn btn-success">Guardar</button>
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<!-- Modal (Editar, Eliminar) -->
+	<div class="modal fade" id="ModalEventos" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="tituloEvento">Agregar Título</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+        	<input type="hidden" id="txtID" name="txtID">
+        	<input type="hidden" id="txtFecha" name="txtFecha">
+
+        	<div class="form-row">
+        		<div class="form-group col-md-8">        			
+        			<label>Título</label>
+        			<input type="text" id="txtTitulo" class="form-control" placeholder="Título del evento">
+        		</div>
+        		<div class="form-group col-md-4">        			
+        			<label>Hora del Evento</label>
+        			<input type="time" id="txtHora" class="form-control" value="10:30">
+        		</div>
+        	</div>
+        	
+        	<div class="form-group">
+        		<label>Descripción</label>
+        		<textarea id="txtDescripcion" class="form-control" rows="3"></textarea>
+        	</div>
+        	<div class="form-group">
+        		<label>Color:</label>
+        		<input type="color" value="#ff0000" id="txtColor" class="form-control" style="height:36px;">
+        	</div>
+      </div>
+	      <div class="modal-footer">
+	        
+	      	<button type="button" id="btnEditar" class="btn btn-primary">Actualizar</button>
+	      	<button type="button" id="btnBorrar" class="btn btn-danger" >Borrar</button>
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<script type="text/javascript">
+		var nuevoEvento;
+
+		$('#btnGuardar').click(function(){
+			recolectarDatosGuardar();
+			enviarInformacion('agregar', nuevoEvento, "#ModalAgregar");			
+		});
+
+		$('#btnEditar').click(function(){
+			recolectarDatosGUI();
+			enviarInformacion('modificar', nuevoEvento, "#ModalEventos");			
+		});
+
+		$('#btnBorrar').click(function(){
+			recolectarDatosGUI();
+			enviarInformacion('borrar', nuevoEvento, "#ModalEventos");			
+		});
+
+		function recolectarDatosGuardar(){
+			nuevoEvento = {
+				id:  $('#txtAgregarID').val(),
+				title: $('#txtAgregarTitulo').val(),
+				start: $('#txtAgregarFecha').val()+" "+$('#txtAgregarHora').val(),
+				color: $('#txtAgregarColor').val(),
+				descripcion: $('#txtAgregarDescripcion').val(),
+				textColor: "#ffffff",
+				end: $('#txtAgregarFecha').val()+" "+$('#txtAgregarHora').val()
+			};
+		}
+
+		function recolectarDatosGUI(){
+			nuevoEvento = {
+				id:  $('#txtID').val(),
+				title: $('#txtTitulo').val(),
+				start: $('#txtFecha').val()+" "+$('#txtHora').val(),
+				color: $('#txtColor').val(),
+				descripcion: $('#txtDescripcion').val(),
+				textColor: "#ffffff",
+				end: $('#txtFecha').val()+" "+$('#txtHora').val()
+			};
+		}
+
+		function enviarInformacion(accion, objEvento, modal){
+			$.ajax({
+				type: 'POST',
+				url: 'eventos.php?accion='+accion,
+				data: objEvento,
+				success: function(msg){
+					if (msg) {
+						$('#CalendarioWeb').fullCalendar('refetchEvents');
+						$(''+modal).modal('toggle');						
+					}
+
+				},
+				error: function(){
+					alert("Hay un error...");
+				}
+			});
+		}
+	</script>
+
+</body>
+</html>
